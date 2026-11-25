@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: paylink_db
+    environment:
+      POSTGRES_USER: paylink
+      POSTGRES_PASSWORD: paylink_secret
+      POSTGRES_DB: paylink_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paylink -d paylink_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: paylink_api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://paylink:paylink_secret@db:5432/paylink_db
+    depends_on:
+      db:
+        condition: service_healthy
